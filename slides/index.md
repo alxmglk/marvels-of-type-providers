@@ -70,7 +70,7 @@ Let's see how some of the most popular type providers could be used in the real 
 [https://github.com/fsharp/FSharp.Data](https://github.com/fsharp/FSharp.Data)
 
 ***
-## Json Provider is an erased provider 
+## Json Provider is an erasing provider 
 #### It doesn't really create any new types in the output assembly
 
     // in reality each json object gets converted into IJsonDocument
@@ -116,7 +116,7 @@ Let's see how some of the most popular type providers could be used in the real 
         CommandType = CommandType.StoredProcedure)
     cmd.Parameters.AddWithValue("@tsql", commandText)
     ```
-* it's an erased type provider so under the hood we have only ADO.NET classes along with a few custom wrappers
+* it's an erasing type provider so under the hood we have only ADO.NET classes along with a few custom wrappers
 
 ***
 ## Swagger Provider
