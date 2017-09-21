@@ -26,7 +26,7 @@ Alexander Mogilka
 ***
 ## The traditional bridging mechanisms are deficient
 * hand-written libraries do not scale to information spaces with large metadata-size
-* workflows involving code generation are clumsy and do not integrate well with explorative programming
+* workflows involving code generation are clumsy and do not integrate well with exploratory programming
 * dynamically-typed bridging mechanisms discard the benefits of strongly-typed programming
 
 ***
