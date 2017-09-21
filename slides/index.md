@@ -142,3 +142,98 @@ Let's see how some of the most popular type providers could be used in the real 
 
 #### The static model is put into the output assembly so it could be consumed from any .NET language
 
+***
+## How about .Net Core support?
+As it stands only erasing type providers are currently supported starting from .NET Core 2.0
+
+And only the providers from `FSharp.Data` package are available for usage (with some trickery)
+
+***
+## Creating a type provider
+
+---
+### Implement ITypeProvider interface
+    interface ITypeProvider
+    {
+        /// Get the namespaces provided by this type provider.
+        IProvidedNamespace[] GetNamespaces();
+        /// Get the static parameters for a provided type.
+        ParameterInfo[] GetStaticParameters(Type typeWithoutArguments);
+        /// Apply static arguments to a provided type.
+        Type ApplyStaticArguments(Type typeWithoutArguments, 
+            string[] typePathWithArguments, 
+            object[] staticArguments);
+        /// Get the implementation of a call to a provided method.
+        Expr GetInvokerExpression(MethodBase syntheticMethodBase, 
+            Expr[] parameters);
+        /// Get the physical contents of the generated provided
+        /// assembly.
+        byte[] GetGeneratedAssemblyContents(Assembly assembly);
+        event System.EventHandler Invalidate;
+    }
+#### Looks scary, isn't it?
+
+---
+### Solution: TypeProviders StarterPack
+
+There is `FSharp.TypeProviders.StarterPack` package which provides the basic implementation of the type provider for namespaces.
+
+Unfortunately this package isn't suitable for .Net Core projects so the only resort for now is to reference the files via Paket or just include them manually.
+
+[https://github.com/fsprojects/FSharp.TypeProviders.StarterPack](https://github.com/fsprojects/FSharp.TypeProviders.StarterPack)
+
+---
+### Inherit from TypeProviderForNamespaces
+    open ProviderImplementation
+    open ProviderImplementation.ProvidedTypes
+    open Microsoft.FSharp.Core.CompilerServices
+
+    [<TypeProvider>]
+    type CustomProvider (config : TypeProviderConfig) as this =
+        inherit TypeProviderForNamespaces ()
+
+        let ns = "MyNamespace.Provided"
+
+        let createTypes() =
+            // build provided types based on data source metadata
+            // implementation is omitted for the sake of brevity
+
+        do
+            // add namespace with provided types
+            this.AddNamespace(ns, createTypes())
+            
+---
+### Use Code Quotations
+    let addI i = <@@ 1 + (%%i) @@>
+    // val add2 : Expr = Call (None, op_Addition, [Value (1), Value (2)])
+    let add2 = addI <@@ 2 @@>
+    // val add2MultipliedByX : x:int -> Expr
+    let add2MultipliedByX x = addI <@@ 2 * x @@>
+
+#### This feature lets you generate an abstract syntax tree that represents F# code
+
+---
+### Dont't forget to mark the type provider assembly
+
+The assembly which exposes type provider should be marked with the following attribute to make the provider discoverable by a compiler
+
+    [<assembly:TypeProviderAssembly>]
+
+***
+## Demo
+#### Build a dummy erasing type provider for .NET Core 2.0
+
+***
+## Conclusion
+* type providers is a killer feature which surely augments the capabilities of F# and gives us a neat approach for consuming various information sources
+* a big obstacle for the further development is a poor support of the type providers on .Net Core
+
+***
+## Questions?
+
+***
+## Useful links
+* https://www.microsoft.com/en-us/research/wp-content/uploads/2016/02/information-rich-themes-v4.pdf
+* http://blog.mavnn.co.uk/type-providers-from-the-ground-up/
+* https://github.com/Microsoft/visualfsharp/issues/3303
+* "F# Design Patterns" by Gene Belitski (the chapter dedicated to type providers)
